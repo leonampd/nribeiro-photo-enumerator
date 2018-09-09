@@ -4,7 +4,9 @@
   "description": "A simple script to rename photos for Nayla",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --cacheDirectory=/tmp/jest_0 --verbose",
+    "lint": "eslint src/",
+    "fix": "eslint --fix src/"
   },
   "author": "Leonam Pereira Dias",
   "license": "MIT",
