@@ -1,3 +1,7 @@
-(function(){
-  console.log('baby roll, baby roll')
-})();
+import file from './src/file';
+
+const dir = '/teste';
+
+Promise.resolve(dir)
+  .then(file)
+  .then(console.log);
