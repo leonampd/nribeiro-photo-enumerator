@@ -1,40 +1,103 @@
-import * as fs from 'fs';
-import sinon from 'sinon';
-import {listFilesFromDir} from '.';
+import Promise from 'bluebird';
+import fs from 'fs';
+import { pipe } from 'ramda';
+import { enumerateFiles, mapIndex } from './index';
 
-const targetTestDir = '/test';
+Promise.promisifyAll(fs);
 
-describe('test filesystem interations', () => {
-  beforeEach(() => {
-    sinon
-      .stub(fs, 'readdirSync')
-      .withArgs(targetTestDir)
-      .returns([
-        'file1.js',
-        'file2.js',
-        'file3.js',
-      ]);
+describe('Given a file list', () => {
+  const filesToBeRenamed = [
+    'DSC_123.jpg',
+    'DSC_945.jpg',
+    'DSC_199.JPG',
+    'TESTE_c.JPG',
+  ];
 
-    sinon
-      .stub(fs, 'existsSync')
-      .withArgs(targetTestDir)
-      .returns(true);
-  });
+  const expectedRenamedFiles = [
+    { oldName: 'DSC_123.jpg', newName: '1.jpg' },
+    { oldName: 'DSC_945.jpg', newName: '2.jpg' },
+    { oldName: 'DSC_199.JPG', newName: '3.jpg' },
+    { oldName: 'TESTE_c.JPG', newName: '4.jpg' },
+  ];
 
-  afterEach(() => {
-    sinon.restore();
-  });
+  it('should rename files', () => Promise.resolve(filesToBeRenamed)
+    .then(pipe(
+      mapIndex(enumerateFiles),
+      Promise.all,
+    ))
+    .then(newFiles => expect(newFiles).toEqual(expectedRenamedFiles)));
 
-  it('list files in a directory', () => {
-    const expectedFileList = [
-      'file1.js',
-      'file2.js',
-      'file3.js',
+  it('shouldn\'t rename files that already enumarated', () => {
+    const fileListWithNumbers = [
+      '1.jpg',
+      '2.jpg',
+      '3.jpg',
+      'DSC_123.jpg',
+      'DSC_945.jpg',
+      'DSC_199.JPG',
+      'TESTE_c.JPG',
     ];
 
-    let files = Promise.resolve(targetTestDir)
-      .then(listFilesFromDir);
+    const expectedRenamedFiles = [
+      { oldName: '1.jpg', newName: '1.jpg' },
+      { oldName: '2.jpg', newName: '2.jpg' },
+      { oldName: '3.jpg', newName: '3.jpg' },
+      { oldName: 'DSC_123.jpg', newName: '4.jpg' },
+      { oldName: 'DSC_945.jpg', newName: '5.jpg' },
+      { oldName: 'DSC_199.JPG', newName: '6.jpg' },
+      { oldName: 'TESTE_c.JPG', newName: '7.jpg' },
+    ];
 
-    console.log(files.resolve());
+    return Promise.resolve(fileListWithNumbers)
+      .then(pipe(
+        mapIndex(enumerateFiles),
+        Promise.all,
+      ))
+      .then(newFiles => expect(newFiles).toEqual(expectedRenamedFiles));
+  });
+
+  it('shouldnt exclude any file running the script twice or more', () => {
+    const fileListWithNumbers = [
+      '1.jpg',
+      '2.jpg',
+      '3.jpg',
+      'DSC_123.jpg',
+      'DSC_945.jpg',
+      'DSC_199.JPG',
+      'TESTE_c1.JPG',
+      'TESTE_c2.JPG',
+      'TESTE_c3.JPG',
+      'TESTE_c4.JPG',
+      'TESTE_c5.JPG',
+      'TESTE_c6.JPG',
+      'TESTE_c7.JPG',
+    ];
+
+    const expectedRenamedFiles = [
+      { oldName: '1.jpg', newName: '1.jpg' },
+      { oldName: '2.jpg', newName: '2.jpg' },
+      { oldName: '3.jpg', newName: '3.jpg' },
+      { oldName: 'DSC_123.jpg', newName: '4.jpg' },
+      { oldName: 'DSC_945.jpg', newName: '5.jpg' },
+      { oldName: 'DSC_199.JPG', newName: '6.jpg' },
+      { oldName: 'TESTE_c1.JPG', newName: '7.jpg' },
+      { oldName: 'TESTE_c2.JPG', newName: '8.jpg' },
+      { oldName: 'TESTE_c3.JPG', newName: '9.jpg' },
+      { oldName: 'TESTE_c4.JPG', newName: '10.jpg' },
+      { oldName: 'TESTE_c5.JPG', newName: '11.jpg' },
+      { oldName: 'TESTE_c6.JPG', newName: '12.jpg' },
+      { oldName: 'TESTE_c7.JPG', newName: '13.jpg' },
+    ];
+
+    return Promise.resolve(fileListWithNumbers)
+      .then(pipe(
+        mapIndex(enumerateFiles),
+        Promise.all,
+      ))
+      .then(pipe(
+        mapIndex(enumerateFiles),
+        Promise.all,
+      ))
+      .then(newFiles => expect(newFiles).toEqual(expectedRenamedFiles));
   });
 });

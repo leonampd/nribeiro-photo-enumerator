@@ -1,18 +1,42 @@
-import * as fs from 'fs';
 import Promise from 'bluebird';
+import fs from 'fs';
+import {
+  add,
+  split,
+  applySpec,
+  toLower,
+  always,
+  path,
+  pipe,
+  addIndex,
+  map,
+} from 'ramda';
 
-const getFilesFromDir = dir => Promise.resolve(dir)
-  .then(fs.readdirSync)
-  .catch((err) => {
-    console.log(err);
-  });
+Promise.promisifyAll(fs);
 
-const isDir = dir => Promise.resolve(dir)
-  .then(fs.existsSync)
-  .catch((err) => {
-    console.log(err);
-  });
+const splitFileName = filename => split('.', filename);
+const addOne = add(1);
+const formatName = file => `${path(['filename'], file)}.${path(['extension'], file)}`;
+const mapIndex = addIndex(map);
+const renameFile = ({ oldName, newName }) => fs.renameAsync(oldName, newName);
 
-const listFilesFromDir = dir => [1, 2, 3];
+const enumerateFiles = (file, index) => Promise.resolve(file)
+  .then(splitFileName)
+  .then(fileArray => ({ filename: fileArray[0], extension: fileArray[1] }))
+  .then(pipe(
+    applySpec({
+      filename: pipe(
+        always(index),
+        addOne,
+      ),
+      extension: pipe(
+        path(['extension']),
+        toLower,
+      ),
+    }),
+    Promise.props,
+  ))
+  .then(formatName)
+  .then(newName => ({ oldName: file, newName }));
 
-export default {isDir, listFilesFromDir};
+export default { enumerateFiles, mapIndex, renameFile };
