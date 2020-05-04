@@ -6,7 +6,9 @@
   "scripts": {
     "test": "jest --cacheDirectory=/tmp/jest_0 --verbose",
     "lint": "eslint src/",
-    "fix": "eslint --fix src/"
+    "fix": "eslint --fix src/",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "author": "Leonam Pereira Dias",
   "license": "MIT",
@@ -18,7 +20,8 @@
     "bluebird": "3.5.2",
     "command-line-args": "5.0.2",
     "command-line-usage": "^5.0.5",
-    "ramda": "0.25.0"
+    "ramda": "0.25.0",
+    "snyk": "^1.317.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -27,5 +30,6 @@
     "eslint-plugin-import": "^2.14.0",
     "jest": "^23.5.0",
     "sinon": "^6.3.4"
-  }
+  },
+  "snyk": true
 }
