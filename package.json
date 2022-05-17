@@ -21,7 +21,7 @@
     "command-line-args": "5.0.2",
     "command-line-usage": "^5.0.5",
     "ramda": "0.25.0",
-    "snyk": "^1.317.0"
+    "snyk": "^1.465.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
